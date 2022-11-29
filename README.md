@@ -2,8 +2,8 @@
 
 These are the Advent of Code 2022 Egel code solutions.
 
-The daily input files are stored in 'input.txt' files. Solutions
-to the two tasks are often called 'task1.eg' and 'task2.eg'.
+The daily input files are stored in `input.txt` files. Solutions
+to the two tasks are often called `task1.eg` and `task2.eg`.
 
 
 All scripts take their input from standard in. To run a 
