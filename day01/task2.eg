@@ -1,0 +1,20 @@
+# Advent of Code (AoC) - day 1, task 2
+
+import "prelude.eg"
+import "os.ego"
+
+using System
+using OS
+using List
+
+def input =
+    let L = read_line stdin in
+    if eof stdin then nil else cons L input
+
+def sums =
+    [ {none} -> {} | {X} -> {X} 
+    | {X,none|XX} -> {X|sums XX}
+    | {X,Y|XX} -> sums {X+Y|XX} ]
+
+def main =
+    let II = map [ "" -> none | N -> to_int N ] input in (sum . take 3 . reverse . sort) (sums II)
