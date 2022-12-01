@@ -9,7 +9,7 @@ using List
 
 def input =
     let L = read_line stdin in
-    if eof stdin then nil else cons L input
+    if eof stdin then {} else {L | input}
 
 def sums =
     [ {none} -> {} | {X} -> {X}
