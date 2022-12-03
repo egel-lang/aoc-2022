@@ -8,16 +8,8 @@ using OS
 using List
 
 def input =
-    let L = read_line stdin in
-    if eof stdin then {} else {L| input}
-
-def sums =
-    [ {none} -> {} | {X} -> {X} 
-    | {X,none|XX} -> {X|sums XX}
-    | {X,Y|XX} -> sums {X+Y|XX} ]
+    let L = read_line stdin in if eof stdin then {} else {L|input}
 
 def main =
-    let II = map [ "" -> none | N -> to_int N ] input in (sum . take 3 . reverse . sort) (sums II)
-
-
-
+    input |> map [ "" -> none | N -> to_int N ] |> split_on none 
+          |> map sum |> sort |> reverse |> take 3 |> sum
