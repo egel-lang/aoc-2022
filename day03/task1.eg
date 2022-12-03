@@ -16,8 +16,8 @@ def to_compartments =
     [ L ->
         let S = unpack L in let N = length S in (take (N/2) S, drop (N/2) S) ]
 
-def score =
+def priority =
     [ {C} -> if ord C < ord 'a' then 27 + ord C - ord 'A' else 1 + ord C - ord 'a' ]
 
 def main =
-    input |> map [S -> S |>to_compartments |> [(R,L) -> intersection R L] |> unique |> score] |> sum
+    input |> map [S -> S |>to_compartments |> [(R,L) -> intersection R L] |> unique |> priority] |> sum

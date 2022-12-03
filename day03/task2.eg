@@ -12,10 +12,10 @@ def input =
     let L = read_line stdin in
     if eof stdin then {} else {L | input}
 
-def score =
+def priority =
     [ {C} -> if ord C < ord 'a' then 27 + ord C - ord 'A' else 1 + ord C - ord 'a' ]
 
 def main =
     input |> map unpack |> chunks 3 
-          |> map [{A,B,C} -> (intersection A (intersection B C)) |> unique |> score ] 
+          |> map [{A,B,C} -> (intersection A (intersection B C)) |> unique |> priority ] 
           |> sum
