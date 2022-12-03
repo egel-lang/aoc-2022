@@ -1,0 +1,23 @@
+# Advent of Code (AoC) - day 3, task 1
+
+import "prelude.eg"
+import "os.ego"
+
+using System
+using OS
+using List
+using String
+
+def input =
+    let L = read_line stdin in
+    if eof stdin then {} else {L | input}
+
+def to_compartments =
+    [ L ->
+        let S = unpack L in let N = length S in (take (N/2) S, drop (N/2) S) ]
+
+def score =
+    [ {C} -> if ord C < ord 'a' then 27 + ord C - ord 'A' else 1 + ord C - ord 'a' ]
+
+def main =
+    input |> map [S -> S |>to_compartments |> [(R,L) -> intersection R L] |> unique |> score] |> sum
