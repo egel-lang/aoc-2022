@@ -1,0 +1,25 @@
+# Advent of Code (AoC) - day 4, task 2
+
+import "prelude.eg"
+import "os.ego"
+import "regex.ego"
+
+using System
+using OS
+using List
+using String
+
+def input =
+    let L = read_line stdin in if eof stdin then {} else {L | input}
+
+val digits = Regex::compile "[0-9]+"
+
+def to_pairs =
+    [ L -> L |> Regex::matches digits |> map to_int |> [{A,B,C,D} -> ((A,B), (C,D)) ] ]
+
+def overlap =
+    let SUB = [ (A,B) (C,_) -> (A <= C) && [_ -> C <= B] ] in
+    [ (P,Q) -> (SUB P Q) || [_ -> SUB Q P] ] 
+
+def main =
+    input |> map to_pairs |> filter overlap |> length
