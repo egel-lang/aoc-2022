@@ -7,7 +7,6 @@ import "regex.ego"
 using System
 using OS
 using List
-using String
 
 def input =
     let L = read_line stdin in if eof stdin then {} else {L | input}
