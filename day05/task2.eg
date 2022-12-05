@@ -1,0 +1,32 @@
+# Advent of Code (AoC) - day 5, task 2
+
+import "prelude.eg"
+import "os.ego"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def input =
+    let L = read_line stdin in if eof stdin then {} else {L | input}
+
+val crate = Regex::compile "\\[([A-Z])\\] ?"
+val digits = Regex::compile "[0-9]+"
+
+def parse_crates = [ CC ->
+    CC |> map [L -> L |> (map pack . chunks 4 . unpack) 
+                      |> map (Regex::group crate) |> map [{S} -> (head . unpack) S | _ -> none] ]
+       |> transpose |> map (filter ((/=) none)) ]
+def parse_moves = map [L -> L |> Regex::matches digits |> map to_int |> [{M,F,T} -> (M, F, T)]]
+
+def move =
+    [(CC,MM) -> foldl 
+        [CC (N,F,T) ->
+            CC |> insert (T - 1) (take N (nth (F - 1) CC) ++ nth (T - 1) CC) 
+               |> insert (F - 1) (drop N (nth (F - 1) CC))]
+        CC MM ]
+
+def main =
+    input |> break ((==) "") |> [(CC,MM) -> (parse_crates (init CC), parse_moves (tail MM))]
+        |> move |> map head |> pack
