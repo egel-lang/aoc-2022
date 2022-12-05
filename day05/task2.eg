@@ -15,7 +15,8 @@ val digits = Regex::compile "[0-9]+"
 
 def parse_crates = 
     do map (do unpack |> chunks 4 |> map (nth 1)) |> transpose |> map (filter ((/=) ' '))
-def parse_moves = map (do Regex::matches digits |> map to_int |> [{M,F,T} -> (M, F, T)])
+def parse_moves = 
+    map (do Regex::matches digits |> map to_int |> [{N,F,T} -> (N,F,T)])
 
 def move =
     [(CC,MM) -> foldl 
