@@ -7,9 +7,11 @@ using System
 using OS
 using List
 
-def find = [ N CC -> 
-    if CC |> take 14 |> unique |> length |> ((==) 14)
-    then N + 14 else find (N + 1) (tail CC) ]
+def find = [ N L CC -> 
+    if CC |> take L |> unique |> length |> ((==) L)
+    then N + L else find (N + 1) L (tail CC) ]
 
 def main =
-    read_line stdin |> unpack |> find 0
+    read_line stdin |> unpack |> find 0 14
+
+
