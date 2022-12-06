@@ -1,0 +1,19 @@
+# Advent of Code (AoC) - day 6, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+
+val digits = Regex::compile "[0-9]+"
+
+def differ = do sort |> unique |> length |> ((==) 4)
+
+def find = [N CC -> if CC |> take 4 |> differ then N + 4 else find (N + 1) (tail CC)]
+
+def main =
+    read_line stdin |> unpack |> find 0
