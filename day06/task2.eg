@@ -12,4 +12,4 @@ def find = [ N L CC ->
     then N + L else find (N + 1) L (tail CC) ]
 
 def main =
-    read_line stdin |> unpack |> find 0 14
+    read_line stdin |> unpack |> find 0 14 
