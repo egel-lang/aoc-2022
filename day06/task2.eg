@@ -2,7 +2,6 @@
 
 import "prelude.eg"
 import "os.ego"
-import "regex.ego"
 
 using System
 using OS
