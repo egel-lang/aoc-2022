@@ -13,5 +13,3 @@ def find = [ N L CC ->
 
 def main =
     read_line stdin |> unpack |> find 0 14
-
-
