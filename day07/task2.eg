@@ -14,12 +14,12 @@ def parse_line = [ L ->
     else if starts_with "$ ls" L then "ls"
     else if starts_with "dir " L then "dir" (remove 0 4 L)
     else L |> unpack |> split_on ' '
-           |> [{W, L} -> (to_int (pack W), pack L)] ]
+           |> [{N, F} -> (to_int (pack N), pack F)] ]
 
 data dir
 def to_zip   = [D -> (D, {})]
 def from_zip = [(D, {}) -> D | (D0, D1) -> from_zip (zip_up (D0, D1))]
-def zip_up   = [(D, {}) -> D | (D0, {(dir P FF)|DD}) -> (dir P {D0|FF}, DD)]
+def zip_up   = [(D0, {(dir P FF)|DD}) -> (dir P {D0|FF}, DD)]
 def zip_into = [(dir P0 FF,DD) P1 -> split [(dir P FF) -> P == P1 | _ -> false] FF 
                                     |> [({D}, FF1) -> (D, {dir P0 FF1|DD})] ]
 def zip_add  = [(dir P0 FF,DD) F -> (dir P0 {F|FF}, DD)]
@@ -32,7 +32,7 @@ def do_line =
     | Z ("dir" P)   -> zip_add Z (dir P {})
     | Z (N, F)      -> zip_add Z (N,F) ]
 
-def build_dir = [ CC -> foldl [T C -> do_line T C] none CC |> from_zip ]
+def build_dir = [ CC -> foldl [Z C -> do_line Z C] none CC |> from_zip ]
 
 def size = [ (N,_) -> N | (dir _ FF) -> sum (map size FF) ]
 
