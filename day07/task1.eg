@@ -1,0 +1,46 @@
+# Advent of Code (AoC) - day 7, task 1
+
+import "prelude.eg" import "os.ego" import "regex.ego" import "search.eg" import "dictionary.eg"
+using System using OS using List using String
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def parse_line = [ L ->
+    if starts_with "$ cd " L then "cd" (remove 0 5 L)
+    else if starts_with "$ ls" L then "ls"
+    else if starts_with "dir " L then "dir" (remove 0 4 L)
+    else L |> unpack |> split_on ' '
+           |> [{W, L} -> (to_int (pack W), pack L)] ]
+
+data dir
+
+def repeat = [N X -> iter N (cons X) {}]
+def printN = [N T -> print (repeat N ' ' |> pack) T "\n"]
+def dir_print = 
+    [N (dir P0 FF) -> printN N P0; map (dir_print (N+4)) FF; none
+    |N F -> printN N F ]    
+
+def to_zip   = [D -> (D, {})]
+def from_zip = [(D, {}) -> D | (D0, D1) -> from_zip (zip_up (D0, D1))]
+def zip_up   = [(D, {}) -> D | (D0, {(dir P FF)|DD}) -> (dir P {D0|FF}, DD)]
+def zip_into = [(dir P0 FF,DD) P1 -> split [(dir P FF) -> P == P1 | _ -> false] FF 
+                                    |> [({D}, FF1) -> (D, {dir P0 FF1|DD})] ]
+def zip_add  = [(dir P0 FF,DD) F -> (dir P0 {F|FF}, DD)]
+
+def do_line =
+    [ Z ("cd" "/")  -> to_zip (dir "/" {})
+    | Z ("cd" "..") -> zip_up Z
+    | Z ("cd" P)    -> zip_into Z P
+    | Z "ls"        -> Z
+    | Z ("dir" P)   -> zip_add Z (dir P {})
+    | Z (N, F)      -> zip_add Z (N,F) ]
+
+def build_dir = [ CC -> foldl [T C -> do_line T C] none CC |> from_zip ]
+
+def size = [ (N,_) -> N | (dir _ FF) -> sum (map size FF) ]
+
+def dirs = [ (dir P FF) -> {dir P FF} ++ flatten (map dirs FF) | _ -> {} ]
+    
+def main = 
+    input |> map parse_line |> build_dir |> dirs |> map size 
+          |> filter [ N -> N <= 100000 ] |> sum
