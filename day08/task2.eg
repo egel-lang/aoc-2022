@@ -1,0 +1,44 @@
+# Advent of Code (AoC) - day 8, task 2
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def to_board =
+   do Gen::from_lists |> Gen::zip_2d Gen::space |> Gen::to_lists |> flatten |> Dict::from_list
+
+def maxes =
+    [ B -> (maximum (map fst (Dict::keys B)), maximum (map snd (Dict::keys B))) ]
+
+def taller = [B T0 T1 -> Dict::get B T0 < Dict::get B T1]
+
+def view =
+    [ B P {} -> {} 
+    | B P {P1|PP} -> if taller B P1 P then {Dict::get B P1|view B P PP} else {Dict::get B P1} ]
+
+def distance =
+    [ B P PP -> length (view B P PP) ]
+
+def pair =
+    [ X:int YY -> map [Y -> (X,Y)] YY | XX Y:int -> map [X -> (X,Y)] XX ]
+
+def score =
+    [B (MAXX,MAXY) (X,Y) ->
+         (distance B (X,Y) (pair (reverse (from_to 0 (X - 1))) Y)) *
+         (distance B (X,Y) (pair (from_to (X + 1) MAXX) Y)) *
+         (distance B (X,Y) (pair X (reverse (from_to 0 (Y - 1))))) *
+         (distance B (X,Y) (pair X (from_to (Y + 1) MAXY)))
+     ]
+
+def scores =
+    [ B -> let MM = maxes B in foldl [Z P -> {score B MM P|Z}] {} (Dict::keys B) ]
+
+def main =
+    input |> map (map to_int . unpack) |> to_board |> scores |> maximum

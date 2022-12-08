@@ -1,0 +1,46 @@
+# Advent of Code (AoC) - day 8, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def to_board =
+   do Gen::from_lists |> Gen::zip_2d Gen::space |> Gen::to_lists |> flatten |> Dict::from_list
+
+def print_board = 
+    [ B -> let KK = Dict::keys B in 
+        foldl [(X0,Y0) (X1,Y1) -> (if not (X0 == X1) then print "\n" else none);
+               print (Dict::get B (X1, Y1)); (X1,Y1) ] (head KK) KK; none ]
+
+def taller = [B T0 T1 -> Dict::get B T0 < Dict::get B T1]
+
+def pair =
+    [ X:int YY -> map [Y -> (X,Y)] YY | XX Y:int -> map [X -> (X,Y)] XX ]
+
+def maxes =
+    [ B -> (maximum (map fst (Dict::keys B)), maximum (map snd (Dict::keys B))) ]
+
+def visible =
+    [B (MAXX,MAXY) (X,Y) ->
+        print (X,Y) "\n";
+         (all [P -> taller B P (X,Y)] (pair (from_to 0 (X - 1)) Y)) ||
+        [_ -> (all [P -> taller B P (X,Y)] (pair (from_to (X + 1) MAXX) Y)) ||
+        [_ -> (all [P -> taller B P (X,Y)] (pair X (from_to 0 (Y - 1)))) ||
+        [_ -> (all [P -> taller B P (X,Y)] (pair X (from_to (Y + 1) MAXY))) ]]]
+     ]
+
+def visible1 =
+    [ B -> let MM = maxes B in foldl [Z P -> Dict::set Z P (visible B MM P)] Dict::dict (Dict::keys B) ]
+
+def count =
+    [ B -> foldl [Z P -> if Dict::get B P then Z+1 else Z] 0 (Dict::keys B) ]
+
+def main =
+    input |> map (map to_int . unpack) |> to_board |> visible1 |> count
