@@ -14,9 +14,6 @@ def input = let L = read_line stdin in if eof stdin then {} else {L | input}
 def to_board =
    do Gen::from_lists |> Gen::zip_2d Gen::space |> Gen::to_lists |> flatten |> Dict::from_list
 
-def maxes =
-    [ B -> (maximum (map fst (Dict::keys B)), maximum (map snd (Dict::keys B))) ]
-
 def view =
     [ T {} -> {} | T {T1|TT} -> if T1 < T then {T1|view T TT} else {T} ]
 
@@ -35,7 +32,8 @@ def score =
      ]
 
 def scores =
-    [ B -> let MM = maxes B in foldl [Z P -> {score B MM P|Z}] {} (Dict::keys B) ]
+    [ B -> let MM = maximum (Dict::keys B) in 
+           foldl [Z P -> {score B MM P|Z}] {} (Dict::keys B) ]
 
 def main =
     input |> map (map to_int . unpack) |> to_board |> scores |> maximum
