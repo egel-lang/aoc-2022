@@ -17,14 +17,11 @@ def to_board =
 def maxes =
     [ B -> (maximum (map fst (Dict::keys B)), maximum (map snd (Dict::keys B))) ]
 
-def taller = [B T0 T1 -> Dict::get B T0 < Dict::get B T1]
-
 def view =
-    [ B P {} -> {} 
-    | B P {P1|PP} -> if taller B P1 P then {Dict::get B P1|view B P PP} else {Dict::get B P1} ]
+    [ T {} -> {} | T {T1|TT} -> if T1 < T then {T1|view T TT} else {T} ]
 
 def distance =
-    [ B P PP -> length (view B P PP) ]
+    [ B P PP -> length (view (Dict::get B P) (map (Dict::get B) PP)) ]
 
 def pair =
     [ X:int YY -> map [Y -> (X,Y)] YY | XX Y:int -> map [X -> (X,Y)] XX ]
