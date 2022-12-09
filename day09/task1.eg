@@ -1,0 +1,39 @@
+# Advent of Code (AoC) - day 9, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+
+using System
+using OS
+using List
+using Math
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def parse_line = do unpack |> split_on ' ' |> [{{L},R} -> (L ((to_int . pack) R)) ]
+
+def pair =
+    [ X:int YY -> map [Y -> (X,Y)] YY | XX Y:int -> map [X -> (X,Y)] XX ]
+
+def move_head =
+    [ ('U' N) (X,Y) -> pair X (from_to (Y + 1) (Y + N))
+    | ('D' N) (X,Y) -> pair X (from_to (Y - 1) (Y - N))
+    | ('L' N) (X,Y) -> pair (from_to (X - 1) (X - N)) Y
+    | ('R' N) (X,Y) -> pair (from_to (X + 1) (X + N)) Y ]
+
+def moves_head = foldl [Z M -> Z ++ move_head M (last Z)] {(0,0)}
+
+def step =
+    [ A B -> if A < B then A + 1 else if B < A then A - 1 else A ]
+
+def tail_step =
+    [ (XT,YT) (XH,YH) -> 
+        if (1 < (abs (XT - XH))) || [_ -> 1 < (abs (YT - YH)) ] 
+        then (step XT XH, step YT YH) else (XT,YT) ]
+
+def tail_steps = scanl tail_step (0,0)
+
+def main =
+    input |> map parse_line |> moves_head |> tail_steps |> unique |> length
