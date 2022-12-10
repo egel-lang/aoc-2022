@@ -1,0 +1,34 @@
+# Advent of Code (AoC) - day 10, task 1
+
+import "prelude.eg"
+import "os.ego" 
+import "generator.eg"
+using System 
+using OS 
+using List 
+using String
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def parse_line = [ L ->
+    if starts_with "noop" L then "noop"
+    else if starts_with "addx" L then "addx" ((to_int . remove 0 5) L)
+    else none ]
+
+def repeat = 
+    [ P {} -> P Gen::++ repeat P P
+    | P {X|XX} -> {X| [_ -> repeat P (XX none)]} ]
+
+def trace =
+    [ Z {"noop"|CC}     -> {Z| [_ -> trace Z (CC none) ] }
+    | Z {("addx" N)|CC} -> {Z| [_ -> {Z| [_ -> trace (Z+N) (CC none)]}]} ]
+
+def probe =
+    [ 1 XX -> {Gen::head XX| [_ -> probe 40 (Gen::tail XX) ]}
+    | N XX -> probe (N - 1) (Gen::tail XX) ]
+
+def main = 
+    input |> map parse_line |> Gen::from_list |> [P -> repeat P {}] 
+          |> trace 1 |> Gen::zip (Gen::from 1)
+          |> probe 20 |> Gen::take 6 |> Gen::to_list
+          |> map (uncurry (*)) |> sum
