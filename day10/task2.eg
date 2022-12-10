@@ -20,8 +20,8 @@ def repeat =
     | P {X|XX} -> {X| [_ -> repeat P (XX none)]} ]
 
 def trace =
-    [ Z {"noop"|CC}     -> {Z| [_ -> trace Z (CC none) ] }
-    | Z {("addx" N)|CC} -> {Z| [_ -> {Z| [_ -> trace (Z+N) (CC none)]}]} ]
+    [ X {"noop"|CC}     -> {X| [_ -> trace X (CC none) ] }
+    | X {("addx" N)|CC} -> {X| [_ -> {X| [_ -> trace (X+N) (CC none)]}]} ]
 
 def sprite =
     [ (C,X) -> if and ((X - 1) <= C) (C <= (X + 1)) then '#' else '.' ]
@@ -30,4 +30,4 @@ def main =
     input |> map parse_line |> Gen::from_list |> [P -> repeat P {}] 
           |> trace 1 |> Gen::take 240 |> Gen::to_list
           |> chunks 40 |> map (map sprite . zip (from_to 0 39))
-          |> map [T -> print (pack T) "\n"] |> [ _ -> none ]
+          |> foldl [_ T -> print (pack T) "\n"] none
