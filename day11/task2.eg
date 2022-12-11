@@ -43,5 +43,5 @@ def round =
     [ N MM -> if N < (length MM) then round (N + 1) (monkey_do (nth N MM) MM) else MM ]
 
 def main = 
-    input |> chunks 7 |> map parse_monkey |> trace 10000 (round 0)
-          |> map (map monkey_count) |> last |> sort |> reverse |> take 2 |> foldl (*) 1
+    input |> chunks 7 |> map parse_monkey |> iter 10000 (round 0)
+          |> map monkey_count |> sort |> reverse |> take 2 |> foldl (*) 1
