@@ -30,12 +30,9 @@ def parse_monkey = [ LL ->
 
 def monkey_count = [ (N, II, OP, DIV, T, E, C) -> C ]
 def monkey_div   = [ (N, II, OP, DIV, T, E, C) -> DIV ]
-def monkey_add =
-    [ (N, II, OP, DIV, T, E, C) I -> (N, II ++ {I}, OP, DIV, T, E, C) ]
-def monkey_throw =
-    [ N I MM -> insert N (monkey_add (nth N MM) I) MM ]
-
-def do_monkey =
+def monkey_add   = [ (N, II, OP, DIV, T, E, C) I -> (N, II ++ {I}, OP, DIV, T, E, C) ]
+def monkey_throw = [ N I MM -> insert N (monkey_add (nth N MM) I) MM ]
+def monkey_do =
     [ (N, II, OP, DIV, T, E, C) MM ->
          let MOD = MM |> map monkey_div |> foldl (*) 1 in
          foldl 
@@ -46,10 +43,7 @@ def do_monkey =
                    else monkey_throw E I0 MM ] MM II ]
 
 def round =
-    [ N MM -> if N < (length MM) then round (N + 1) (do_monkey (nth N MM) MM) else MM ]
-
-def trace =
-    [ 0 F X -> {X} | N F X -> {X|trace (N - 1) F (F X)} ]
+    [ N MM -> if N < (length MM) then round (N + 1) (monkey_do (nth N MM) MM) else MM ]
 
 def main = 
     input |> chunks 7 |> map parse_monkey |> trace 10000 (round 0)
