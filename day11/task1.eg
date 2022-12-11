@@ -1,0 +1,57 @@
+# Advent of Code (AoC) - day 11, task 1
+import "prelude.eg"
+import "os.ego" 
+import "generator.eg"
+import "regex.ego"
+using System 
+using OS 
+using List 
+using String
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+val digits = Regex::compile "[0-9]+"
+val operator = Regex::compile "[\\+\\*]+"
+val old = Regex::compile "old"
+
+def num  = do Regex::matches digits |> head |> to_int
+def nums = do Regex::matches digits |> map to_int
+def op   = do Regex::matches operator |> head |> [O -> if O == "+" then (+) else (*)]
+def arg  = do Regex::matches old |> length
+
+def join = [ F X -> F X X ]
+
+def parse_monkey = [ LL ->
+    (num (nth 0 LL), nums (nth 1 LL), 
+     if arg (nth 2 LL) == 1 
+     then (op (nth 2 LL)) (num (nth 2 LL))
+     else join (op (nth 2 LL)), 
+     num (nth 3 LL), num (nth 4 LL), num (nth 5 LL), 0 ) ]
+
+def monkey_add =
+    [ (N, II, OP, DIV, T, E, C) I -> (N, II ++ {I}, OP, DIV, T, E, C) ]
+def monkey_throw =
+    [ N I MM -> insert N (monkey_add (nth N MM) I) MM ]
+
+def do_monkey =
+    [ (N, II, OP, DIV, T, E, C) MM -> foldl 
+         [MM I ->  let MM = insert N (N, {}, OP, DIV, T, E, C+length II) MM in
+                   let I0 = (OP I)/3 in 
+                   if (I0 % DIV) == 0 
+                   then monkey_throw T I0 MM
+                   else monkey_throw E I0 MM ] MM II ]
+
+def monkey_count = [ (N, II, OP, DIV, T, E, C) -> C ]
+
+def round =
+    [ N MM -> if N < (length MM) then round (N + 1) (do_monkey (nth N MM) MM) else MM ]
+
+def trace =
+    [ N F X -> print (map monkey_count X) "\n";
+    [ 0 F X -> {X} | N F X -> {X|trace (N - 1) F (F X)} ]
+    N F X ]
+
+def main = 
+    input |> chunks 7 |> map parse_monkey |> trace 20 (round 0)
+          |> map (map monkey_count) 
+          |> last |> sort |> reverse |> take 2 |> foldl (*) 1
