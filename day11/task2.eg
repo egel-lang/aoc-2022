@@ -1,7 +1,6 @@
 # Advent of Code (AoC) - day 11, task 1
 import "prelude.eg"
 import "os.ego" 
-import "generator.eg"
 import "regex.ego"
 using System 
 using OS 
@@ -18,8 +17,6 @@ def num  = do Regex::matches digits |> head |> to_int
 def nums = do Regex::matches digits |> map to_int
 def op   = do Regex::matches operator |> head |> [O -> if O == "+" then (+) else (*)]
 def arg  = do Regex::matches old |> length
-
-def join = [ F X -> F X X ]
 
 def parse_monkey = [ LL ->
     (num (nth 0 LL), nums (nth 1 LL), 
