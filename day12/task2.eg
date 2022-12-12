@@ -14,7 +14,7 @@ def input = let L = read_line stdin in if eof stdin then {} else {L | input}
 def to_board =
    do Gen::from_lists |> Gen::zip_2d Gen::space |> Gen::to_lists |> flatten |> Dict::from_list
 
-def to_height = [ 'S' -> to_height 'a' | 'E' -> to_height 'z' |  C -> ord C - ord 'a']
+def height = [ 'S' -> height 'a' | 'E' -> height 'z' |  C -> ord C - ord 'a']
 
 def get_pos = [ C -> do Dict::to_list |> filter (do snd |> ((==) C)) |> map fst ]
 
@@ -24,7 +24,7 @@ def neighbors = [ D (X,Y) ->
 def mark = [ D P L -> [(_,_) -> D | C -> Dict::set D P (C,  L)] (Dict::get D P) ]
 
 def may = [ D (P0,P1) -> 
-    [(C0:char, _) C1:char -> (to_height C1) <= (to_height C0 + 1) | _ _ -> false ] 
+    [(C0:char, _) C1:char -> height C1 - height C0 <= 1 | _ _ -> false ] 
     (Dict::get D P0) (Dict::get D P1) ]
 
 def find = [ D -> 
