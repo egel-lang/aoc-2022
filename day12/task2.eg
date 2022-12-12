@@ -16,10 +16,10 @@ def to_board =
 
 def to_height = [ 'S' -> to_height 'a' | 'E' -> to_height 'z' |  C -> ord C - ord 'a']
 
-def get_pos = [ D C ->  Dict::to_list D |> filter [(P,C0) -> C == C0] |> map (proj 1) ]
+def get_pos = [ D C ->  Dict::to_list D |> filter [(P,C0) -> C == C0] |> map fst ]
 
 def neighbors = [ D (X,Y) -> 
-    {(X,Y - 1),(X - 1,Y),(X + 1, Y),(X,Y+ 1)} |> filter [P -> Dict::has D P ] ]
+    {(X,Y - 1),(X - 1,Y),(X + 1, Y),(X,Y + 1)} |> filter [P -> Dict::has D P ] ]
 
 def mark = [ D P L -> [(_,_) -> D | C -> Dict::set D P (C,  L)] (Dict::get D P) ]
 
