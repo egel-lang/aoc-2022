@@ -38,4 +38,4 @@ def find = [ D ->
         ] (0, SS, D) ]
 
 def main =
-    input |> map unpack |> to_board |> find |> [(L, _, _) -> L]
+    input |> map unpack |> to_board |> find |> proj 1
