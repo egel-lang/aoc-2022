@@ -1,0 +1,62 @@
+# Advent of Code (AoC) - day 12, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+
+using System
+using OS
+using List
+using String
+
+def while = [ F X -> let Y = F X in if Y == none then {X} else {X|while F Y} ]
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def to_board =
+   do Gen::from_lists |> Gen::zip_2d Gen::space |> Gen::to_lists |> flatten |> Dict::from_list
+
+def print_board = 
+    [ B -> let KK = Dict::keys B in 
+        foldl [(X0,Y0) (X1,Y1) -> (if not (X0 == X1) then print "\n" else none);
+               print (Dict::get B (X1, Y1)); (X1,Y1) ] (head KK) KK; none ]
+
+def print_board2 = 
+    [ B -> let KK = Dict::keys B in 
+        foldl [(X0,Y0) (X1,Y1) -> (if not (X0 == X1) then print "\n" else none);
+               print ([(C,_) -> ({C}|>pack|>to_upper) | _ -> '.' ] (Dict::get B (X1, Y1))); (X1,Y1) ] (head KK) KK; none ]
+
+def to_height = [ 'S' -> to_height 'a' | 'E' -> to_height 'z' |  C -> ord C - ord 'a']
+
+def get_pos = [ D C -> Dict::to_list D |> foldl [P0 (P1, C1) -> if C == C1 then P1 else P0] none ]
+
+def neighbors = [ D (X0,Y0) -> 
+    map [(DX,DY) -> (X0+DX,Y0+DY)] {(0,-1), (-1,0), (1, 0), (0,1)}
+    |> filter [P -> Dict::has D P ] ]
+
+def mark = [D P L -> [(_,_) -> D | C -> Dict::set D P (C,  L)] (Dict::get D P) ]
+
+def may = [D (P0,P1) -> 
+    [(C0:char, _) C1:char ->
+ (to_height C1) <= (to_height C0 + 1) | _ _ -> false ] (Dict::get D P0) (Dict::get D P1) ]
+
+def find = [ D -> 
+    let (S, E) = (get_pos D 'S', get_pos D 'E') in 
+    while [(L, PP, D) ->
+        print (S,E) "\n";
+        print L "\n";
+        print PP "\n";
+        print_board2 D;
+        print "\n";
+        map [P -> mark D P L] PP;
+        if elem E PP then none
+        else
+        let PP = PP |> map [P -> neighbors D P |> map [P0 -> (P,P0)] ] |> flatten |> filter (may D) |> map snd |> unique  in
+        (L+1, PP, D)
+        ]
+    (0, {S}, D)
+    ]
+
+def main =
+    input |> map unpack |> to_board |> find |> last |> [(L, _, _) -> L]
