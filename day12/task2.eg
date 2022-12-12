@@ -34,8 +34,8 @@ def find = [ D ->
         if elem E PP then none
         else let PP = PP |> map [P -> neighbors D P |> map [P0 -> (P,P0)] ] 
                          |> flatten |> filter (may D) |> map snd |> unique  
-        in (L+1, PP, D)
-        ] (0, SS, D) ]
+        in (L+1, PP, D) ] (0, SS, D) 
+    |> proj 1 ]
 
 def main =
-    input |> map unpack |> to_board |> find |> proj 1
+    input |> map unpack |> to_board |> find
