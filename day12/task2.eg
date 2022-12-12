@@ -14,7 +14,6 @@ def input = let L = read_line stdin in if eof stdin then {} else {L | input}
 def to_board =
    do Gen::from_lists |> Gen::zip_2d Gen::space |> Gen::to_lists |> flatten |> Dict::from_list
 
-
 def to_height = [ 'S' -> to_height 'a' | 'E' -> to_height 'z' |  C -> ord C - ord 'a']
 
 def get_pos = [ D C ->  Dict::to_list D |> foldl [PP (P1, C1) -> if C == C1 then {P1|PP} else PP] {} ]
