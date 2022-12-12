@@ -16,7 +16,7 @@ def to_board =
 
 def to_height = [ 'S' -> to_height 'a' | 'E' -> to_height 'z' |  C -> ord C - ord 'a']
 
-def get_pos = [ D C ->  Dict::to_list D |> foldl [PP (P1, C1) -> if C == C1 then {P1|PP} else PP] {} ]
+def get_pos = [ D C ->  Dict::to_list D |> filter [(P,C0) -> C == C0] |> map (proj 1) ]
 
 def neighbors = [ D (X0,Y0) -> 
     map [(DX,DY) -> (X0+DX,Y0+DY)] {(0,-1), (-1,0), (1, 0), (0,1)} |> filter [P -> Dict::has D P ] ]
