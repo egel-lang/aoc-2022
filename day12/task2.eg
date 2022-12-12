@@ -16,10 +16,10 @@ def to_board =
 
 def to_height = [ 'S' -> to_height 'a' | 'E' -> to_height 'z' |  C -> ord C - ord 'a']
 
-def get_pos = [ D C ->  Dict::to_list D |> filter [(P,C0) -> C == C0] |> map fst ]
+def get_pos = [ C -> do Dict::to_list |> filter (do snd |> ((==) C)) |> map fst ]
 
 def neighbors = [ D (X,Y) -> 
-    {(X,Y - 1),(X - 1,Y),(X + 1, Y),(X,Y + 1)} |> filter [P -> Dict::has D P ] ]
+    {(X,Y - 1),(X - 1,Y),(X + 1, Y),(X,Y + 1)} |> filter (Dict::has D) ]
 
 def mark = [ D P L -> [(_,_) -> D | C -> Dict::set D P (C,  L)] (Dict::get D P) ]
 
@@ -28,7 +28,7 @@ def may = [ D (P0,P1) ->
     (Dict::get D P0) (Dict::get D P1) ]
 
 def find = [ D -> 
-    let (SS, E) = (get_pos D 'S' ++ get_pos D 'a', get_pos D 'E' |> head) in 
+    let (SS, E) = (get_pos 'S' D ++ get_pos 'a' D, get_pos 'E' D |> head) in
     while [(L, PP, D) ->
         map [P -> mark D P L] PP;
         if elem E PP then none
