@@ -1,0 +1,43 @@
+# Advent of Code (AoC) - day 13, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "regex.ego"
+import "search.eg"
+using System
+using OS
+using List
+using Search
+
+def input = let L = read_line stdin in if eof stdin then nil else cons L input
+
+val digit = Regex::compile "[0-9]"
+
+def look     = [ {} -> fail {} | {B|BB} -> success B BB ]
+def is_char  = [ C0 -> look <*> \C1 -> if C0 == C1 then success C0 else fail ]
+def is_digit = look <*> \C -> if Regex::match digit (pack {C}) then success C else fail
+
+def parse_num   = plus is_digit <@> \L -> L |> pack |> to_int
+def parse_lists = star (parse_list </> \L -> is_char ',' <@> \_ -> L)
+def parse_list  = parse_num <+> (is_char '[' <*> \_ -> parse_lists <*> \LL -> is_char ']' <@> \_ -> LL)
+
+def parse_line = [ L -> (search (parse_list) L [X CC -> X] [X CC -> throw X] [X CC -> throw X]) ]
+
+def compare =
+    [ X Y -> print "compare " X " " Y "\n";
+    [ X:int Y:int -> if X < Y then -1 else if Y < X then 1 else 0
+    | X:int YY -> compare {X} YY
+    | XX Y:int -> compare XX {Y}
+    | {} {}  -> 0 | {} _   -> -1 | _  {} -> 1
+    | {X|XX} {Y|YY} -> 
+        let C = compare X Y in
+        if C < 0 then C
+        else if 0 < C then C
+        else compare XX YY ]
+    X Y ]
+
+    
+def main = 
+    input |> split_on "" |> map (map (parse_line . unpack)) |> map [{X,Y} -> (X,Y)]
+          |> map ([C -> C <= 0] . uncurry compare) |> [L -> zip (from_to 1 (length L)) L]
+          |> filter [(N,B) -> B] |> map fst |> sum
