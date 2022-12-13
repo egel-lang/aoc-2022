@@ -31,10 +31,14 @@ def compare =
 
 val div0 = parse_line "[[2]]"
 val div1 = parse_line "[[6]]"
+ 
+def fix = [ F -> F [ X -> (fix F) X ] ]
+
+def index_of = 
+    let F = fix [F N X {} -> none | F N X {Y|YY} -> if X == Y then N else F (N+1) X YY ] in
+    [ X YY -> F 0 X YY ]
     
 def main = 
     input |> filter [L -> L /= ""] 
         |> map parse_line |> ((++) {div0, div1}) |> sort_by [X Y -> compare X Y < 0]
-        |> [XX -> zip (from_to 1 (length XX)) XX]
-        |> filter [(N, L) -> (compare L div0 == 0) || \_ -> (compare L div1 == 0)]
-        |> map fst |> product
+        |> [PP -> (index_of div0 PP + 1) * (index_of div1 PP + 1)]
