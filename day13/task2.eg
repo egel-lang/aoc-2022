@@ -34,9 +34,7 @@ val div1 = parse_line "[[6]]"
     
 def main = 
     input |> filter [L -> L /= ""] 
-        |> map parse_line
-        |> ((++) {div0, div1}) 
-        |> sort_by [X Y -> compare X Y < 0]
+        |> map parse_line |> ((++) {div0, div1}) |> sort_by [X Y -> compare X Y < 0]
         |> [XX -> zip (from_to 1 (length XX)) XX]
         |> filter [(N, L) -> (compare L div0 == 0) || \_ -> (compare L div1 == 0)]
         |> map fst |> product
