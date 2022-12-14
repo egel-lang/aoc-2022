@@ -1,0 +1,72 @@
+# Advent of Code (AoC) - day 14, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def digits = Regex::compile "[0-9]+"
+
+def parse_line =
+    do Regex::matches digits |> map to_int |> chunks 2 |> map [{X,Y} -> (X,Y)]
+
+def to_board =
+   do Gen::from_lists |> Gen::zip_2d Gen::space |> Gen::to_lists |> flatten |> Dict::from_list
+
+def print_board = 
+    [ B -> let KK = Dict::keys B in 
+        foldl [(X0,Y0) (X1,Y1) -> (if not (X0 == X1) then print "\n" else none);
+               print (Dict::get B (X1, Y1)); (X1,Y1) ] (head KK) KK; none ]
+
+val source = (500,0)
+
+def make_board =
+    [ LL ->
+        let LL0 = {source|flatten LL} in
+        let MINX = minimum (map fst LL0) in
+        let MAXX = maximum (map fst LL0) in
+        let MINY = minimum (map snd LL0) in
+        let MAXY = maximum (map snd LL0) in
+        map [X -> map [Y -> ((X,Y), '.')] (from_to MINY MAXY)] (from_to MINX MAXX)
+        #map [X -> map [Y -> ((X,Y), '.')] (from_to MINY MAXY)] (from_to (MINX - 1) (MAXX + 1))
+        |> flatten |> Dict::from_list ]
+
+def to_pairs = [ LL -> zip LL (tail LL) ]
+
+def draw_line = 
+    [ D (X0,Y0) (X1,Y1) ->
+        (if X0 == X1 then map [Y -> (X0,Y)] (from_to Y0 Y1)
+        else map [X -> (X,Y1)] (from_to X0 X1) )
+        |> foldl [D (X,Y) -> Dict::set D (X,Y) '#'] D ]
+
+def draw_lines =
+    [ LL D -> LL |> map to_pairs |> flatten |> foldl [D L -> uncurry (draw_line D) L] D ]
+
+def next = [ (X,Y) -> {(X, Y+1), (X - 1, Y+1), (X + 1, Y+1), (X, Y)} ]
+
+def unit = [ D ->
+    while [ P ->
+    let (X,Y) = next P |> filter [P -> Dict::nth '.' D P == '.'] |> head in
+    if (999 < Y) || [_ -> P == (X,Y)] then none
+    else (X,Y) ] source ]
+
+def sand = [ D ->
+    while
+    [ D ->
+      print_board D; print "\n\n";
+      let (X,Y) = unit D in
+      print (X,Y) "\n";
+      if (999 <= Y) then none
+      else Dict::set D (X,Y) 'o' ] D ]
+
+def main =
+    input |> map parse_line |> [LL -> make_board LL |> draw_lines LL] |> sand 
+          |> Dict::values |> filter ((==) 'o') |> length
+

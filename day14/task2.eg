@@ -1,0 +1,49 @@
+# Advent of Code (AoC) - day 14, task 2
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def digits = Regex::compile "[0-9]+"
+
+def parse_line =
+    do Regex::matches digits |> map to_int |> chunks 2 |> map [{X,Y} -> (X,Y)]
+
+val source = (500,0)
+
+def draw_line = 
+    [ D (X0,Y0) (X1,Y1) ->
+        (if X0 == X1 then map [Y -> (X0,Y)] (from_to Y0 Y1)
+        else map [X -> (X,Y1)] (from_to X0 X1) )
+        |> foldl [D (X,Y) -> Dict::set D (X,Y) '#'] D ]
+
+def draw_lines =
+    [ LL D -> LL |> map [L -> zip L (tail L)] |> flatten |> foldl [D L -> uncurry (draw_line D) L] D ]
+
+def next = [ (X,Y) -> {(X, Y+1), (X - 1, Y+1), (X + 1, Y+1), (X, Y)} ]
+
+def unit = [ FLOOR D ->
+    while [ P ->
+    let (X,Y) = next P |> filter [P -> Dict::nth '.' D P == '.'] |> head in
+    if (P == (X,Y)) || [_ -> Y == FLOOR] then none
+    else (X,Y) ] source ]
+
+def sand = [ D ->
+    let FLOOR = maximum (map snd (Dict::keys D)) + 2 in
+    while
+    [ D ->
+      let (X,Y) = unit FLOOR D in
+      if (X,Y) == source then Dict::set D source 'o'; none
+      else Dict::set D (X,Y) 'o' ] D ]
+
+def main =
+    input |> map parse_line |> [LL -> Dict::dict |> draw_lines LL] |> sand 
+          |> Dict::values |> filter ((==) 'o') |> length
