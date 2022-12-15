@@ -26,7 +26,7 @@ def draw_line =
         |> foldl [D (X,Y) -> Dict::set D (X,Y) '#'] D ]
 
 def draw_lines =
-    [ LL D -> LL |> map [L -> zip L (tail L)] |> flatten |> foldl [D L -> uncurry (draw_line D) L] D ]
+    [ D LL -> LL |> map [L -> zip L (tail L)] |> flatten |> foldl [D L -> uncurry (draw_line D) L] D ]
 
 def next = [ (X,Y) -> {(X, Y+1), (X - 1, Y+1), (X + 1, Y+1), (X, Y)} ]
 
@@ -38,12 +38,11 @@ def unit = [ FLOOR D ->
 
 def sand = [ D ->
     let FLOOR = maximum (map snd (Dict::keys D)) + 2 in
-    while
-    [ D ->
+    while [ D ->
       let (X,Y) = unit FLOOR D in
       if (X,Y) == source then Dict::set D source 'o'; none
       else Dict::set D (X,Y) 'o' ] D ]
 
 def main =
-    input |> map parse_line |> [LL -> Dict::dict |> draw_lines LL] |> sand 
+    input |> map parse_line |> draw_lines Dict::dict |> sand 
           |> Dict::values |> filter ((==) 'o') |> length
