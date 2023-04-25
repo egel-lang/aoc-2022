@@ -1,0 +1,69 @@
+# Advent of Code (AoC) - day 14, task 1
+
+# this is a correct solution but takes 57 minutes to complete
+# 10852583132904
+# cat input.txt  0.00s user 0.00s system 57% cpu 0.007 total
+# egel task2.eg  3378.83s user 32.66s system 99% cpu 56:56.07 total
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def digits = Regex::compile "-?[0-9]+"
+
+def parse_line =
+    do Regex::matches digits |> map to_int
+
+def to_sensor = [{X,Y,P,Q} -> (X,Y, abs (X - P) + abs (Y - Q)) ]
+
+def intersect_line =
+    [ H (X,Y,Z) -> 
+        let D = abs (Y - H) in
+        let R = Z - D in
+        if 0 <= R then (X - R, X + R) else none ]
+
+def contains = [Z (S,E) -> (S <= Z) && [_ -> Z <= E]]
+
+def overlap =
+    [ (S0,E0) (S1,E1) ->
+        contains E0 (S1,E1) || [_ -> contains E1 (S0,E0) ] ]
+
+def merge =
+    [ (S0, E0) (S1,E1) -> (min S0 S1, max E0 E1) ]
+
+def insert =
+    [ L LL ->
+         let (LL0, LL1) = split (overlap L) LL in
+         if LL0 == {} then {L|LL1} else
+         let {L|LL0} = map (merge L) LL0 in insert L (LL0 ++ LL1) ]
+
+def union = do foldl [LL L -> insert L LL] {}
+
+def coverage = [H LL ->
+          map to_sensor LL
+          |> map (intersect_line H)
+          |> filter ((/=) none)
+          |> union
+    ]
+
+def find = [ H LL -> 
+    #print "line: " H "\n";
+    let CC = coverage H LL |> sort in
+    if (length CC == 2) && [_ -> (snd (nth 0 CC)) + 2 == fst (nth 1 CC) ] then
+        (snd (nth 0 CC) + 1, H) 
+    else
+        find (H + 1) LL ]
+
+def main =
+    input |> map parse_line 
+          |> find 0
+          |> [(X,Y) -> X * 4000000 + Y]
+
