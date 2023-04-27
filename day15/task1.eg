@@ -1,0 +1,75 @@
+# Advent of Code (AoC) - day 14, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def digits = Regex::compile "-?[0-9]+"
+
+def parse_line =
+    do Regex::matches digits |> map to_int
+
+def to_sensor = [{X,Y,P,Q} -> (X,Y, abs (X - P) + abs (Y - Q)) ]
+
+def intersect_line =
+    [ H (X,Y,Z) -> 
+        let D = abs (Y - H) in
+        let R = Z - D in
+        if 0 <= R then (X - R, X + R) else none ]
+
+def contains = [Z (S,E) -> (S <= Z) && [_ -> Z <= E]]
+
+def overlap =
+    [ (S0,E0) (S1,E1) ->
+        contains E0 (S1,E1) || [_ -> contains E1 (S0,E0) ] ]
+
+def merge =
+    [ (S0, E0) (S1,E1) -> (min S0 S1, max E0 E1) ]
+
+def insert =
+    [ L LL ->
+         let (LL0, LL1) = split (overlap L) LL in
+         if LL0 == {} then {L|LL1} else
+         let {L|LL0} = map (merge L) LL0 in insert L (LL0 ++ LL1) ]
+
+def union = do foldl [LL L -> insert L LL] {}
+
+def coverage = [H LL ->
+          map to_sensor LL
+          |> map (intersect_line H)
+          |> filter ((/=) none)
+          |> union
+    ]
+
+def to_beacon = [{X,Y,P,Q} -> (P,Q)]
+def to_sensor0 = [{X,Y,P,Q} -> (X,Y)]
+def on_line = [ H -> do filter (do snd |> ((==) H)) |> map fst ]
+
+def split0 = 
+    [ P (B,E) -> 
+        if contains P (B, E) then
+            if B == E then {} 
+            else if P == B then {(B + 1, E)}
+            else if P == E then {(B, E - 1)}
+            else {(B, P - 1), (P + 1, E)}
+        else {(B,E)} ]
+
+def remove = [PP LL -> foldl [LL P -> map (split0 P) LL |> flatten] LL PP]
+
+def main =
+    input |> map parse_line 
+          |> [ROW L -> 
+                let BB = map to_beacon L |> on_line ROW in
+                let SS = map to_sensor0 L |> on_line ROW in
+                    coverage ROW L |> remove BB |> remove SS ] 2000000
+          |> map [(S,E) -> (E - S) + 1]
+          |> sum
+
