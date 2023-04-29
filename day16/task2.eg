@@ -1,0 +1,77 @@
+# Advent of Code (AoC) - day 16, task 2
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def digits = Regex::compile "[0-9]+"
+def valves = Regex::compile "[A-Z][A-Z]"
+
+def parse_line =
+    [L ->
+        let F = L |> Regex::matches digits |> map to_int |> head in
+        let {V|VV} = L |> Regex::matches valves in
+        (V, (F, VV)) ]
+
+def pairs =
+    do [ XX -> map [X -> map [Y -> (X,Y)] XX] XX ] |> flatten
+
+def distance_graph =
+    [ LL ->
+    let EE0 = map fst LL |> pairs in
+    let EE1 = map fst LL |> map [X -> (X,X)] in
+    let EE2 = foldr [(X, (_,YY)) EE -> foldr [Y ZZ -> {(X,Y)|ZZ}] EE YY] {} LL in
+        ((map [P -> (P,1000)] EE0) ++ (map [P -> (P,0)] EE1) ++ (map [P -> (P,1)] EE2))
+        |> Dict::from_list
+    ]
+
+#dabbling with syntax
+def for = [ XX F Z -> foldr F Z XX ]
+
+def floyd_warshall =
+    [ VV G -> for VV [Vk G -> for VV [Vi G -> for VV [Vj G -> 
+        Dict::set G (Vi, Vj) (min (Dict::get G (Vi, Vj)) (Dict::get G (Vi, Vk) + Dict::get G (Vk, Vj))) ] G ] G ] G ]
+
+def flows =
+    do map [(X,(V,_)) -> (X,V)] |> filter [(X,V) -> V /= 0]
+
+def search =
+    [ X XX T P FF G ->
+        for FF [(Y,V) PP ->
+            let R = T - (Dict::get G (X,Y)) - 1 in
+            if R <= 0 then PP else
+            let P = P + (V * R) in
+            let FF = filter [E -> E /= (Y,V)] FF in
+            {(P,{Y|XX})|PP} ++ (search Y {Y|XX} R P FF G) ] {} ]
+
+
+def disjoint =
+    [ XX YY -> all [X -> not_elem X YY] XX ]
+
+def compress =
+    [ XX -> for XX [(P,VV) D -> 
+        let VV = sort VV in Dict::set D VV (if Dict::has D VV then max P (Dict::get D VV) else P) ] Dict::dict
+        |> Dict::to_list |> map [(VV,P) -> (P,VV)] ]
+
+def combine =
+    [ XX -> for XX [(P0,VV0) P -> for XX [(P1,VV1) P -> if disjoint VV0 VV1 then max P (P0+P1) else P ] P] 0 ]
+
+def main =
+    input |> map parse_line |> 
+        [ LL -> 
+            let VV = map fst LL in
+            let G = floyd_warshall VV (distance_graph LL) in
+            let FF = flows LL in 
+            search "AA" {} 26 0 FF G ]
+    |> compress
+    |> combine
+
+
