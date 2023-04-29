@@ -1,0 +1,64 @@
+# Advent of Code (AoC) - day 16, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def digits = Regex::compile "[0-9]+"
+def valves = Regex::compile "[A-Z][A-Z]"
+
+def parse_line =
+    [L ->
+        let F = L |> Regex::matches digits |> map to_int |> head in
+        let {V|VV} = L |> Regex::matches valves in
+        (V, (F, VV)) ]
+
+def pairs =
+    do [ XX -> map [X -> map [Y -> (X,Y)] XX] XX ] |> flatten
+
+def distance_graph =
+    [ LL ->
+    let EE0 = map fst LL |> pairs in
+    let EE1 = map fst LL |> map [X -> (X,X)] in
+    let EE2 = foldr [(X, (_,YY)) EE -> foldr [Y ZZ -> {(X,Y)|ZZ}] EE YY] {} LL in
+        ((map [P -> (P,1000)] EE0) ++ (map [P -> (P,0)] EE1) ++ (map [P -> (P,1)] EE2))
+        |> Dict::from_list
+    ]
+
+#dabbling with syntax
+def for = [ XX F Z -> foldr F Z XX ]
+
+def floyd_warshall =
+    [ VV G -> for VV [Vk G -> for VV [Vi G -> for VV [Vj G -> 
+        Dict::set G (Vi, Vj) (min (Dict::get G (Vi, Vj)) (Dict::get G (Vi, Vk) + Dict::get G (Vk, Vj))) ] G ] G ] G ]
+
+def flows =
+    do map [(X,(V,_)) -> (X,V)] |> filter [(X,V) -> V /= 0]
+
+def search =
+    [ X T P FF G ->
+        for FF [(Y,V) PP ->
+            let R = T - (Dict::get G (X,Y)) - 1 in
+            if R <= 0 then PP else
+            let P = P + (V * R) in
+            let FF = filter [E -> E /= (Y,V)] FF in
+            {P|PP} ++ (search Y R P FF G) ] {} ]
+
+def main =
+    input |> map parse_line |> 
+        [ LL -> 
+            let VV = map fst LL in
+            let G = floyd_warshall VV (distance_graph LL) in
+            let FF = flows LL in 
+            search "AA" 30 0 FF G ]
+    |> maximum
+
+
