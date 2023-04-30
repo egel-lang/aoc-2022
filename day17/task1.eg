@@ -1,0 +1,85 @@
+# Advent of Code (AoC) - day 17, task 1
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+val rocks =
+    ref (5, 0, {{(0, 0), (1, 0), (2, 0), (3, 0)}, 
+           {(1, 0), (0, 1), (1, 1), (2, 1), (1, 2)}, 
+           {(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)}, 
+           {(0, 0), (0, 1), (0, 2), (0, 3)}, 
+           {(0, 0), (1, 0), (0, 1), (1, 1)}})
+def rocks_get = 
+    let (N, I, FF) = get_ref rocks in
+    set_ref rocks (N, I+1, FF); nth (I % N) FF
+
+def rock_move  = [(X0,Y0) -> map [(X1, Y1) -> (X0+X1, Y0+Y1)] ]
+
+def rock_min_x = do map fst |> minimum
+def rock_max_x = do map fst |> maximum
+def rock_min_y = do map snd |> minimum
+def rock_max_y = do map snd |> maximum
+
+val flows = ref (0, 0, {})
+def flows_set = [ FF -> set_ref flows (length FF, 0, FF) ]
+def flows_get =
+    let (N,I,FF) = get_ref flows in
+    set_ref flows (N, I+1, FF); nth (I % N) FF
+
+val cave = ref (-1, Dict::dict)
+
+def cave_add_rock =
+    [ R ->
+    let (H,D) = get_ref cave in
+    let H = max H (rock_max_y R) in
+    let D = foldr [D P -> Dict::set P D true] D R in
+        set_ref cave (H,D) ]
+
+def cave_rock_allowed =
+    [ R ->
+        if (rock_min_x R < 0) || [_ -> 6 < rock_max_x R ] then false
+        else if rock_min_y R < 0 then false 
+        else let (_,D) = get_ref cave in all [P -> not (Dict::has D P)] R ]
+
+def rock_flow =
+    [ R0 ->
+        let R1 = (if flows_get == '<' then rock_move (-1,0) else rock_move (1,0)) R0 in
+        if cave_rock_allowed R1 then R1 else R0 ]
+
+def rock_fall =
+    [ R0 -> 
+        let R1 = rock_move (0,-1) R0 in
+        if cave_rock_allowed R1 then R1 else none ]
+
+def rock_iter =
+    [ R -> 
+        let R0 = rock_flow R in
+        let R1 = rock_fall R0 in
+        if R1 == none then cave_add_rock R0 else rock_iter R1 ]
+
+def rock_drop =
+    let (H,D) = get_ref cave in
+    let R = rock_move (2, H+4) rocks_get in rock_iter R
+    
+def print_cave =
+    let (H,D) = get_ref cave in
+    while [Y -> map [X -> print (if Dict::has D (X,Y) then '#' else '.')] (from_to 0 6); 
+                print "\n";
+                if 0 <= Y - 1 then Y - 1 else none ] H ; none
+
+def field_height = length
+def main =
+    input |> head |> unpack |> flows_set;
+    iter 2022 [_ -> rock_drop] 0;
+    #print_cave;
+    let (H,_) = get_ref cave in H+1
+
+
