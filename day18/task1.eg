@@ -1,0 +1,32 @@
+# Advent of Code (AoC) - day 18, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def digits = Regex::compile "[0-9]+"
+
+def parse_line = do Regex::matches digits |> map to_int |> [ {X,Y,Z} -> (X,Y,Z) ]
+
+def offsets = {(-1,0,0),(1,0,0),(0,-1,0),(0,1,0),(0,0,-1),(0,0,1)}
+
+def add3d = [(X0,Y0,Z0) (X1,Y1,Z1) -> (X0+X1,Y0+Y1,Z0+Z1)]
+
+def neighbors = [ P -> map (add3d P) offsets ]
+
+def set3d = foldr [P D -> Dict::set D P true] Dict::dict
+
+def count =
+    [ D -> let PP = Dict::keys D in
+        foldr [ P N -> N + 6 - (foldr [P N -> if Dict::has D P then N+1 else N] 0 (neighbors P)) ] 0 PP ]
+
+def main =
+    input |> map parse_line |> set3d |> count
