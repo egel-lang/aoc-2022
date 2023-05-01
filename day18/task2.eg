@@ -34,8 +34,7 @@ def count =
               |(N,{P|PP},V) ->
                 if Dict::has V P then (N,PP,V) else
                 if Dict::has D P then (N+1,PP,V) else
-                let NN = neighbors P in
-                (N, NN ++ PP, Dict::set V P true) ]
+                (N, neighbors P ++ PP, Dict::set V P true) ]
         (0, {(0,0,0)},Dict::dict) ] |> [(N,_,_) -> N]
 
 def main =
