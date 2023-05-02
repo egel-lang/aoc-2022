@@ -1,0 +1,41 @@
+# Advent of Code (AoC) - day 20, task 1
+
+# failed attempt
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def to_cycle = do Gen::from_list |> Gen::cycle
+
+def print_it =
+    [ nil -> print "\n" | (cons X XX) -> print X ", "; print_it (XX none) ]
+
+def remove_at =
+    [ 0 (cons X XX) -> XX | N (cons X XX) -> cons X (remove_at (N - 1) XX) ]
+
+def insert_at =
+    [ N X nil -> cons X nil 
+    | N X (cons Y YY) -> if N == 0 then cons X (cons Y YY) else cons Y (insert_at (N - 1) X YY) ]
+
+def mix =
+    [ CC ->
+        let L = length CC in
+        foldl [CC X ->
+            let I = index_of X CC in 
+            let J = (I + X) % (L - 1) in
+            let J = (if J <= 0 then L + J - 1 else J) in
+                insert_at J X (remove_at I CC) ] CC CC ]
+            
+def main =
+    input |> map to_int |> mix 
+    |> [ CC -> let L = length CC in let N = index_of 0 CC in map [N -> nth N CC] {(1000 + N)%L,(2000+N)%L,(3000+N)%L} ]
+    |> sum
