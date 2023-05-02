@@ -1,0 +1,65 @@
+# Advent of Code (AoC) - day 19, task 1
+
+# there's still a bug but gives the correct output
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def time = 32
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+def digits = Regex::compile "[0-9]+"
+def parse_line = do Regex::matches digits |> map to_int 
+    |> [{N,A,B,C,D,E,F} -> (N,{
+        ((1,0,0,0),(-A,0,0,0)),
+        ((0,1,0,0),(-B,0,0,0)),
+        ((0,0,1,0),(-C,-D,0,0)),
+        ((0,0,0,1),(-E,0,-F,0))},
+        ({A,B,C,E} |> maximum, D, F, time))]
+
+def add4d = [(X0,Y0,Z0,N0) (X1,Y1,Z1,N1) -> (X0+X1,Y0+Y1,Z0+Z1,N0+N1)]
+def mul4d = [S (X,Y,Z,N) -> (X*S, Y*S, Z*S, N*S)]
+def pos4d = [(X,Y,Z,N) -> (0 <= X) && [_ -> (0 <= Y) && [_ -> (0 <= Z) && [_ -> (0 <= N)]]]]
+
+val bound = ref (0,0,0,0)
+def bound_set = [M -> set_ref bound M]
+def bound_less = [(X0,Y0,Z0,N0) -> let (X1,Y1,Z1,N1) = get_ref bound in
+                (X0 <= X1) && [_ -> (Y0 <= Y1) && [_ -> (Z0 <= Z1)]] ]
+
+val best = Dict::dict
+def best_get = [ T -> Dict::get best T ]
+def best_set = [ T N -> Dict::set best T (max N (best_get T)) ]
+def best_reset = map [T -> Dict::set best T 0] (from_to 0 time); none
+
+def geode = [(_,_,_,G) -> G]
+
+def advance =
+    [ T BB (R0,S0) (R1,S1) ->
+        if best_get T <= geode S0 then
+            best_set T (geode S0);
+            if time <= T then 0
+            else let S2 = add4d S0 S1 in
+            if pos4d S2 then
+                if bound_less (add4d R0 R1) then search (T+1) BB (add4d R0 R1, add4d R0 S2)
+                else 0
+            else advance (T+1) BB (R0, add4d R0 S0) (R1,S1)
+         else 0 ]
+
+def search =
+    [ T BB (R0,S0) ->
+        { mul4d (time - T) R0 |> add4d S0 |> geode | 
+          foldr [(R1,S1) AA -> {advance T BB (R0,S0) (R1,S1)|AA}] {} BB } |> maximum ]
+          
+def solve =
+    do map [(N,BB,M) -> print "processing: " N "\n"; bound_set M; best_reset ; (search 0 BB ((1,0,0,0),(0,0,0,0)))]
+    |> product
+
+def main =
+    input |> map parse_line |> take 3 |> solve
