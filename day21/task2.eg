@@ -1,0 +1,59 @@
+# Advent of Code (AoC) - day 21, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def token = Regex::compile "[0-9]+|[a-z]+|[+\\-\\*/]"
+
+data eq
+
+def to_eq = [ {N,V} -> eq N (to_int V) | {N0,N1,OP,N2} -> eq N0 N1 OP N2 ]
+
+def unit =
+    [ (eq N:int V) -> eq V N
+    | (eq V N:int) -> eq V N
+    | (eq V N0:int "+" N1:int) -> eq V (N0 + N1)
+    | (eq N0:int V "+" N1:int) -> eq V (N0 - N1)
+    | (eq N0:int N1:int "+" V) -> eq V (N0 - N1)
+    | (eq V N0:int "-" N1:int) -> eq V (N0 - N1)
+    | (eq N0:int V "-" N1:int) -> eq V (N0 + N1)
+    | (eq N0:int N1:int "-" V) -> eq V (N1 - N0)
+    | (eq V N0:int "*" N1:int) -> eq V (N0 * N1)
+    | (eq N0:int V "*" N1:int) -> eq V (N0 / N1)
+    | (eq N0:int N1:int "*" V) -> eq V (N0 / N1)
+    | (eq V N0:int "/" N1:int) -> eq V (N0 / N1)
+    | (eq N0:int V "/" N1:int) -> eq V (N0 * N1)
+    | (eq N0:int N1:int "/" V) -> eq V (N1 / N0)
+    | _ -> none ]
+
+def find_unit =
+    [ {C0|CC} -> let C1 = unit C0 in if C1 == none then
+                 let (C1,CC) = find_unit CC in (C1, {C0|CC})
+                 else (C1,CC) ]
+
+def sub = 
+    [ S (eq N0 N1) -> eq (sub S N0) (sub S N1)
+    | S (eq N0 N1 OP N2) -> eq (sub S N0) (sub S N1) OP (sub S N2)
+    | (eq N V) C-> if N == C then V else C ]
+           
+
+def propagate = [ S -> foldr [C CC -> {sub S C|CC}] {} ]
+
+def solve =
+    [ CC -> let (eq N V, CC) = find_unit CC in
+            if N == "root" then V else solve (propagate (eq N V) CC) ]
+
+def correct =
+    [ (eq "root" N0 _ N1) -> (eq N0 N1) | (eq "humn" V0) -> (eq "humn" "root") | C -> C ]
+
+def main =
+    input |> map (Regex::matches token) |> map to_eq |> map correct |> solve
