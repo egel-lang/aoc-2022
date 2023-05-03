@@ -1,6 +1,7 @@
 # Advent of Code (AoC) - day 20, task 1
 
-# failed attempt
+# failed attempt, works on test input, no so much on input
+# the python cheat doesn't seem to conform to the test...
 
 import "prelude.eg"
 import "os.ego"

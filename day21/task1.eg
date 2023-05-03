@@ -1,0 +1,51 @@
+# Advent of Code (AoC) - day 21, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "generator.eg"
+import "dictionary.eg"
+import "regex.ego"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then {} else {L | input}
+
+def token = Regex::compile "[0-9]+|[a-z]+|[+\\-\\*/]"
+
+data monkey
+
+def to_monkey =
+    [ {M,N} -> monkey M (to_int N)
+    | {M,M0,OP,M1} -> monkey M M0 OP M1 ]
+
+def shout =
+    [ {(monkey M V)|MM} -> (monkey M V, MM)
+    | {M|MM} -> let (M0,MM) = shout MM in (M0, {M|MM}) ]
+
+def simplify =
+    [ (monkey M V0:int "+" V1:int) -> (monkey M (V0 + V1))
+    | (monkey M V0:int "-" V1:int) -> (monkey M (V0 - V1))
+    | (monkey M V0:int "*" V1:int) -> (monkey M (V0 * V1))
+    | (monkey M V0:int "/" V1:int) -> (monkey M (V0 / V1))
+    | M -> M ]
+
+def sub =
+    [ (monkey M0 V0) M1 -> if M0 == M1 then V0 else M1 ]
+
+def propagate =
+    [ M0 -> 
+        foldr [(monkey M1 V1) MM -> {monkey M1 V1| MM}
+              |(monkey M1 M2 OP M3) MM -> 
+                 {simplify (monkey M1 (sub M0 M2) OP (sub M0 M3))|MM}]
+              {} ]
+                
+
+def solve =
+    [ MM -> let ((monkey M V), MM) = shout MM in
+            if M == "root" then V else solve (propagate (monkey M V) MM) ]
+
+def main =
+    input |> map (Regex::matches token) |> map to_monkey |> solve
+
