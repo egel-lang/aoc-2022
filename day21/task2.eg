@@ -44,7 +44,6 @@ def sub =
     [ S (eq N0 N1) -> eq (sub S N0) (sub S N1)
     | S (eq N0 N1 OP N2) -> eq (sub S N0) (sub S N1) OP (sub S N2)
     | (eq N V) C-> if N == C then V else C ]
-           
 
 def propagate = [ S -> foldr [C CC -> {sub S C|CC}] {} ]
 
