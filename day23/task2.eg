@@ -1,0 +1,59 @@
+# Advent of Code (AoC) - day 23, task 2
+
+import "prelude.eg"
+import "os.ego"
+import "regex.ego"
+import "generator.eg"
+import "dictionary.eg"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then nil else cons L input
+
+def to_board = do Gen::from_lists |> Gen::zip_2d Gen::space |> Gen::to_lists |> flatten
+
+def coords = 
+    do map unpack |> to_board |> filter [(P,'#') -> true | _ -> false] |> map [(P,_) -> P]
+
+def bag_inc = [D P -> Dict::set D P (if Dict::has D P then Dict::get D P + 1 else 1) ]
+def bag_from_list = foldr [P D -> bag_inc D P] Dict::dict
+
+def add2d = [(X0,Y0) (X1,Y1) -> (X0+X1,Y0+Y1)]
+
+val mask = ref
+    {({(-1,-1),(-1,0),(-1,1)},(-1,0)), ({(1,-1),(1,0),(1,1)},(1,0)),
+     ({(-1,-1),(0,-1),(1,-1)},(0,-1)), ({(-1,1),(0,1),(1,1)},(0,1))}
+def get_mask =
+    let M = get_ref mask in set_ref mask (tail M ++ {head M}); M
+
+def propose0 =
+    [ B {} P0-> (P0, none)
+    | B {(PP,P1)|TT} P0 ->
+        if all [P -> not (Dict::has B P)] (map (add2d P0) PP) then (P0, add2d P0 P1)
+        else propose0 B TT P0 ]
+
+val neighbours = {(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)}
+
+def propose1 =
+    [ B M P -> 
+        if all [P -> not (Dict::has B P)] (map (add2d P) neighbours) then (P,none)
+        else propose0 B M P ]
+
+def proposals =
+    [ PP -> let B = bag_from_list PP in map (propose1 B get_mask) PP ]
+
+def move_to =
+    [ B (P0,P1) -> if P1 == none then P0 else if Dict::get B P1 == 1 then P1 else P0 ]
+
+def move =
+    [ PP -> let B = bag_from_list (map snd PP) in map [M -> move_to B M] PP ]
+
+def rounds = 
+    [ N PP -> let PP = proposals PP in
+              if all ((==) none) (map snd PP) then (N+1)
+              else rounds (N+1) (move PP) ]
+
+def main =
+    input |> coords |> rounds 0
