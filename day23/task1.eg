@@ -1,0 +1,58 @@
+# Advent of Code (AoC) - day 11, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "regex.ego"
+import "generator.eg"
+import "dictionary.eg"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then nil else cons L input
+
+def to_board = do Gen::from_lists |> Gen::zip_2d Gen::space |> Gen::to_lists |> flatten
+
+def coords = 
+    do map unpack |> to_board |> filter [(P,'#') -> true | _ -> false] |> map [(P,_) -> P]
+
+def print_board = 
+    [ B -> let KK = Dict::keys B in 
+        foldl [(X0,Y0) (X1,Y1) -> (if not (X0 == X1) then print "\n" else none);
+               print (Dict::get B (X1, Y1)); (X1,Y1) ] (head KK) KK; none ]
+
+def bag_inc = [D P -> Dict::set D P (if Dict::has D P then Dict::get D P + 1 else 1) ]
+def bag_from_list = foldr [P D -> bag_inc D P] Dict::dict
+
+def add2d = [(X0,Y0) (X1,Y1) -> (X0+X1,Y0+Y1)]
+
+val mask = ref
+    {({(-1,-1),(-1,0),(-1,1)},(-1,0)), ({(1,-1),(1,0),(1,1)},(1,0)),
+     ({(-1,-1),(0,-1),(1,-1)},(0,-1)), ({(-1,1),(0,1),(1,1)},(0,1))}
+def get_mask =
+    let M = get_ref mask in set_ref mask (tail M ++ {head M}); M
+
+def propose =
+    [ B {} P0-> (P0, none)
+    | B {(PP,P1)|TT} P0 ->
+        if all [P -> not (Dict::has B P)] (map (add2d P0) PP) then (P0, add2d P0 P1)
+        else propose B TT P0 ]
+
+def proposals =
+    [ PP -> let B = bag_from_list PP in map (propose B get_mask) PP ]
+
+def move_to =
+    [ B (P0,P1) -> if P1 == none then P0 else if Dict::get B P1 == 1 then P1 else P0 ]
+
+def move =
+    [ PP -> let B = bag_from_list (map snd PP) in map [M -> move_to B M] PP ]
+
+def round = do proposals |> move
+
+def box = foldr [(X0, Y0) (X1,Y1,X2,Y2) -> (min X0 X1, min Y0 Y1, max X0 X2, max Y0 Y2)]
+          (10000,10000,-10000,-1000)
+
+def main =
+    input |> coords |> iter 10 round
+    # |> box |> [(X0,Y0,X1,Y1) -> ((1+X1-X0) * (1+Y1-Y0))]
