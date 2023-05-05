@@ -1,0 +1,34 @@
+# Advent of Code (AoC) - day 25, task 1
+
+import "prelude.eg"
+import "os.ego"
+import "regex.ego"
+import "generator.eg"
+import "dictionary.eg"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then nil else cons L input
+
+def digit_from_snafu =
+    [ '0' -> 0 | '1' -> 1 | '2' -> 2 | '=' -> -2 | '-' -> -1 ]
+
+def digit_to_snafu =
+    [ -2 -> '=' | -1 -> '-' | 0 -> '0' | 1 -> '1' | 2 -> '2' ]
+
+def from_pental = foldl [A D -> A*5 + D] 0
+
+def from_snafu = do unpack |> map digit_from_snafu |> from_pental
+
+def to_pentalish =
+    [ N -> if N < 5 then {N} else 
+           let (N0,N1) = (N/5, N%5) in
+           if N1 < 3 then to_pentalish N0 ++ {N1}
+           else to_pentalish (N0+1) ++ {N1- 5} ]
+
+def to_snafu = do to_pentalish |> map digit_to_snafu |> pack
+
+def main =
+    input |> map from_snafu |> sum |> to_snafu
