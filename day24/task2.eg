@@ -1,0 +1,51 @@
+# Advent of Code (AoC) - day 24, task 2
+
+import "prelude.eg"
+import "os.ego"
+import "regex.ego"
+import "generator.eg"
+import "dictionary.eg"
+
+using System
+using OS
+using List
+
+def input = let L = read_line stdin in if eof stdin then nil else cons L input
+
+def to_board = do Gen::from_lists |> Gen::zip_2d Gen::space |> Gen::to_lists
+
+def blizzards = 
+    do map unpack |> tail . init |> map (tail . init) |> to_board
+    |> [BB -> (length (head BB), length BB, flatten BB |> Dict::from_list)]
+
+def add2d = [(X0,Y0) (X1,Y1) -> (X0+X1, Y0+Y1)]
+
+def positions = 
+    do map [P -> map (add2d P) {(0,0),(-1,0),(1,0),(0,-1),(0,1)}]
+    |> flatten |> unique
+
+def mod = [N M -> let Y = N%M in if Y < 0 then Y+M else Y ]
+
+def is_legal =
+    [ (W,H,BB) N (X,Y) ->
+        if (0 <= X) && [_ -> (X < H) && [_ -> (0 <= Y) && [_ -> (Y < W)]]]
+        then
+            if Dict::get BB (X, mod (Y+N) W) == '<' then false 
+            else if Dict::get BB (X, mod (Y-N) W) == '>' then false
+            else if Dict::get BB (mod (X+N) H,Y) == '^' then false
+            else if Dict::get BB (mod (X-N) H,Y) == 'v' then false
+            else true
+        else false ]
+
+def solve =
+    [ BB N S E PP ->
+        let PP = positions {S|PP} in
+        if elem E PP then N
+        else solve BB (N+1) S E (filter (is_legal BB N) PP) ]
+
+def main =
+    input |> blizzards |> 
+        [ (W,H,BB) -> 
+            let N = solve (W,H,BB) 1 (-1,0) (H, W - 1) {(-1,0)} in 
+            let N = solve (W,H,BB) N (H, W - 1) (-1,0) {(H,W - 1)} in 
+            let N = solve (W,H,BB) N (-1,0) (H, W - 1) {(-1,0)} in N ]
