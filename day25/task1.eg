@@ -23,7 +23,7 @@ def from_pental = foldl [A D -> A*5 + D] 0
 def from_snafu = do unpack |> map digit_from_snafu |> from_pental
 
 def to_pentalish =
-    [ N -> if N < 5 then {N} else 
+    [ N -> if N < 3 then {N} else 
            let (N0,N1) = (N/5, N%5) in
            if N1 < 3 then to_pentalish N0 ++ {N1}
            else to_pentalish (N0+1) ++ {N1- 5} ]
