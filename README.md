@@ -55,10 +55,10 @@ The lessons learned:
     would like it to be. A rewrite of the interpreter for the 0.2 version should fix that, hopefully.
 
   * As a minor point, the pipe `|>` operator, where for example `x |> f |> g` abbreviates `g (f x)`, 
-    was added since that allows for a pleasant expression of chained function applications.
+    was added since that allows for a pleasant, now popular, expression of chained function applications.
 
     Since piping values now becommes an important idiom in egel programs, the `do` notation was also
-    added, where `do f |> g` abbreviates `[X -> g (f X)]` was also added to support a consice manner
+    added, where `do f |> g` abbreviates `[X -> g (f X)]`, to support a consice manner
     of expressing more complex pipes.
 
 Also, this year's Advent of Code had multiple problematic cases where a solution ran fine on test
