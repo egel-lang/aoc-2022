@@ -37,7 +37,7 @@ script type `cat input.txt | egel taskx.eg`.
   | **[22](https://adventofcode.com/2022/day/22)** | [task1.eg](day22/task1.eg) | [task2.eg](day22/task2.eg) | |
   | **[23](https://adventofcode.com/2022/day/23)** | [task1.eg](day23/task1.eg) | [task2.eg](day23/task2.eg) | |
   | **[24](https://adventofcode.com/2022/day/24)** | [task1.eg](day24/task1.eg) | [task2.eg](day24/task2.eg) | |
-  | **[25](https://adventofcode.com/2022/day/25)** | [task1.eg](day25/task1.eg) | [task2.eg](day25/task2.eg) | |
+  | **[25](https://adventofcode.com/2022/day/25)** | [task1.eg](day25/task1.eg) |                            | |
 
 </div>
 
