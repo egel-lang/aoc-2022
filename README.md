@@ -40,3 +40,30 @@ script type `cat input.txt | egel taskx.eg`.
   | **[25](https://adventofcode.com/2022/day/25)** | [task1.eg](day25/task1.eg) | [task2.eg](day25/task2.eg) | |
 
 </div>
+
+## Conclusions
+
+This year's Advent of Code was rather uneventful. I stopped half way to take a break since there was little
+point to showing that egel is mostly up to the task.
+
+The lessons learned:
+
+  * As the previous year had shown, egel is far too slow to be very useful. Egel has a robust but expensive
+    implementation of a directed acyclic graph rewriter in straightforward C++. That manner, an explicit
+    garbage collector is avoided by exploiting smart pointers, but all egel runtime objects are
+    rather heavyweight C++ objects resulting in a performance two or three orders of where the author
+    would like it to be. A rewrite of the interpreter for the 0.2 version should fix that, hopefully.
+
+  * As a minor point, the pipe `|>` operator, where for example `x |> f |> g` abbreviates `g (f x)`, 
+    was added since that allows for a pleasant expression of chained function applications.
+
+    Since piping values now becommes an important idiom in egel programs, the `do` notation was also
+    added, where `do f |> g` abbreviates `[X -> g (f X)]` was also added to support a consice manner
+    of expressing more complex pipes.
+
+Also, this year's Advent of Code had multiple problematic cases where a solution ran fine on test
+input, seemed to implement the specification, but gave the wrong answer on the supplied task. Moreover,
+it seems a few Python solutions don't implement the specification right but do pass the given task.
+Something seems fishy or sloppy about this year's advent. Moreover, day 22 wasn't done since it more
+or less boils down to getting all corner cases right instead of something algorithmically interesting;
+for short, just too much boring work.
